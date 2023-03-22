@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import Web3 from "web3";
 import { Dialog } from "@headlessui/react";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import ConnectWallet from "./connect-wallet";
@@ -14,6 +15,30 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const [open, setOpen] = useState(false);
+
+  const [connectedAccount, setConnectedAccount] = useState("");
+
+  useEffect(() => {
+    const loadConnectedAccount = async () => {
+      const web3 = new Web3(Web3.givenProvider);
+      const accounts = await web3.eth.getAccounts();
+      if (accounts.length > 0) {
+        setConnectedAccount(accounts[0]);
+      }
+    };
+
+    loadConnectedAccount();
+  }, []);
+
+  const connectWallet = async () => {
+    try {
+      const web3 = new Web3(Web3.givenProvider);
+      const accounts = await web3.eth.requestAccounts();
+      setConnectedAccount(accounts[0]);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   return (
     <header className="bg-black sticky top-0 z-50">
@@ -48,13 +73,34 @@ export default function Navbar() {
           ))}
         </div>
         <div className="hidden lg:flex lg:flex-1 lg:justify-end">
-          <button
+          {/* <button
             onClick={() => setOpen(true)}
             className="rounded-md bg-[#111] py-1.5 px-2.5 text-sm font-semibold text-white shadow-sm hover:bg-[#333]/80"
           >
             Connect Wallet
-          </button>
-          <ConnectWallet open={open} setOpen={setOpen} />
+          </button> */}
+          {connectedAccount ? (
+            <button
+              className="rounded-md bg-[#111] py-1.5 px-2.5 text-sm font-semibold text-white shadow-sm hover:bg-[#333]/80"
+              disabled
+            >
+              {connectedAccount.slice(0, 5) +
+                "..." +
+                connectedAccount.slice(-4)}
+            </button>
+          ) : (
+            <button
+              onClick={() => setOpen(true)}
+              className="rounded-md bg-[#111] py-1.5 px-2.5 text-sm font-semibold text-white shadow-sm hover:bg-[#333]/80"
+            >
+              Connect Wallet
+            </button>
+          )}
+          <ConnectWallet
+            open={open}
+            setOpen={setOpen}
+            connectWallet={connectWallet}
+          />
         </div>
       </nav>
       <Dialog

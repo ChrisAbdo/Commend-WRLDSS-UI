@@ -1,12 +1,11 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useInView } from "react-intersection-observer";
-import ParallaxText from "./scroll-velocity";
-import ParallaxTextSection from "./parallax-text";
+import { useSmoothScroll } from "@/hooks/useSmoothScroll";
 
 const cards = [
   {
-    name: "On-Chain Reputation",
+    name: "On-Chain Reputation 🔥",
     description:
       "With Commend, you can build a reputation on-chain. This means that your reputation is immutable and can be used to prove your identity and trustworthiness.",
   },
@@ -29,11 +28,16 @@ export default function HeaderSection() {
   };
 
   const [ref, inView] = useInView({
-    triggerOnce: true,
+    triggerOnce: false,
     threshold: 0.1,
   });
+
+  const { scrollY } = useSmoothScroll();
   return (
-    <div className="relative isolate overflow-hidden bg-white py-24 sm:py-32">
+    <motion.div
+      className="relative isolate overflow-hidden bg-white py-24 sm:py-32 z-40"
+      style={{ y: scrollY }}
+    >
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <div className="mx-auto mt-16 grid max-w-2xl grid-cols-1 gap-6 sm:mt-20 lg:mx-0 lg:max-w-none lg:grid-cols-3 lg:gap-8">
           {cards.map((card, index) => (
@@ -60,6 +64,6 @@ export default function HeaderSection() {
           ))}
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

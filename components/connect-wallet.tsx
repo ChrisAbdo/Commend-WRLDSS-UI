@@ -1,7 +1,9 @@
 import Web3 from "web3";
-import { Fragment, useState } from "react";
+import { Fragment, useState, useEffect } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { CheckIcon } from "@heroicons/react/24/outline";
+
+declare var window: any;
 
 export default function ConnectWallet({
   open,
@@ -20,6 +22,25 @@ export default function ConnectWallet({
     const accounts = await web3.eth.getAccounts();
     setConnectedAccount(accounts[0]);
   };
+
+  // use effect for event listeners
+  useEffect(() => {
+    // event listener for MetaMask account change
+    window.ethereum.on("accountsChanged", function (accounts: string[]) {
+      setConnectedAccount(accounts[0]);
+    });
+
+    // event listener for MetaMask disconnect
+    window.ethereum.on(
+      "disconnect",
+      function (error: { code: number; message: string }) {
+        // @ts-ignore
+        setConnectedAccount(null);
+        console.error(error);
+      }
+    );
+  }, []);
+
   return (
     <Transition.Root show={open} as={Fragment}>
       <Dialog as="div" className="relative z-50" onClose={setOpen}>

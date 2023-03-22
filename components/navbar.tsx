@@ -3,36 +3,52 @@ import Web3 from "web3";
 import { Dialog } from "@headlessui/react";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import ConnectWallet from "./connect-wallet";
+import Link from "next/link";
+
+declare var window: any;
 
 const navigation = [
-  { name: "Product", href: "#" },
-  { name: "Features", href: "#" },
+  { name: "Explore", href: "/explore" },
+  { name: "Create Profile", href: "/create-profile" },
   { name: "Marketplace", href: "#" },
   { name: "Company", href: "#" },
 ];
 
 export default function Navbar() {
+  const web3 = new Web3(Web3.givenProvider);
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
   const [open, setOpen] = useState(false);
-
   const [connectedAccount, setConnectedAccount] = useState("");
 
   useEffect(() => {
     const loadConnectedAccount = async () => {
-      const web3 = new Web3(Web3.givenProvider);
       const accounts = await web3.eth.getAccounts();
       if (accounts.length > 0) {
         setConnectedAccount(accounts[0]);
       }
     };
 
+    // event listener for MetaMask account change
+
+    window.ethereum.on("accountsChanged", function (accounts: string[]) {
+      setConnectedAccount(accounts[0]);
+    });
+
+    // event listener for MetaMask disconnect
+    window.ethereum.on(
+      "disconnect",
+      function (error: { code: number; message: string }) {
+        // @ts-ignore
+        setConnectedAccount(null);
+      }
+    );
+
     loadConnectedAccount();
   }, []);
 
   const connectWallet = async () => {
     try {
-      const web3 = new Web3(Web3.givenProvider);
       const accounts = await web3.eth.requestAccounts();
       setConnectedAccount(accounts[0]);
     } catch (err) {
@@ -48,7 +64,9 @@ export default function Navbar() {
       >
         <div className="flex lg:flex-1">
           <div className="-m-1.5 p-1.5">
-            <h1 className="text-2xl font-bold text-white">Commend</h1>
+            <Link href="/" className="text-2xl font-bold text-white">
+              Commend
+            </Link>
           </div>
         </div>
         <div className="flex lg:hidden">
@@ -63,13 +81,13 @@ export default function Navbar() {
         </div>
         <div className="hidden lg:flex lg:gap-x-12">
           {navigation.map((item) => (
-            <a
+            <Link
               key={item.name}
               href={item.href}
-              className="text-sm font-semibold leading-6 text-gray-900"
+              className="text-sm font-semibold leading-6 text-white hover:text-white/80"
             >
               {item.name}
-            </a>
+            </Link>
           ))}
         </div>
         <div className="hidden lg:flex lg:flex-1 lg:justify-end">

@@ -5,6 +5,7 @@ import NFT from "@/backend/build/contracts/NFT.json";
 import axios from "axios";
 import { motion } from "framer-motion";
 import { Dialog, Transition } from "@headlessui/react";
+import * as Toast from "@radix-ui/react-toast";
 
 import {
   Bars3BottomLeftIcon,
@@ -44,6 +45,13 @@ export default function Example() {
   const [selectedNFT, setSelectedNFT] = useState(null);
   const [selectedNFTCommends, setSelectedNFTCommends] = useState(null);
   const [isValid, setIsValid] = useState(false);
+  const [open, setOpen] = useState(false);
+  const eventDateRef = useRef(new Date());
+  const timerRef = useRef(0);
+
+  useEffect(() => {
+    return () => clearTimeout(timerRef.current);
+  }, []);
 
   const cancelButtonRef = useRef(null);
   const filteredItems =
@@ -52,7 +60,7 @@ export default function Example() {
       : nfts.filter(
           (item) =>
             // @ts-ignore
-            item.altName.toLowerCase().includes(query.toLowerCase()) ||
+            item.seller.toLowerCase().includes(query.toLowerCase()) ||
             // @ts-ignore
             item.role.toLowerCase().includes(query.toLowerCase())
         );
@@ -310,14 +318,13 @@ export default function Example() {
 
                 {query && (
                   <div className="mb-2">
-                    <span className="inline-flex items-center rounded-md bg-indigo-100 py-0.5 pl-2.5 pr-1 text-sm font-medium text-indigo-700">
+                    <span className="inline-flex items-center rounded-md bg-[#111] py-0.5 pl-2.5 pr-1 text-sm font-medium text-white">
                       {query}
                       <button
                         type="button"
                         onClick={() => setQuery("")}
-                        className="ml-0.5 inline-flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-md text-indigo-400 hover:bg-indigo-200 hover:text-indigo-500 focus:bg-indigo-500 focus:text-white focus:outline-none"
+                        className="ml-0.5 inline-flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-md text-white hover:bg-[#333] hover:text-white/80 focus:bg-[#333] focus:text-white focus:outline-none"
                       >
-                        <span className="sr-only">Remove large option</span>
                         <svg
                           className="h-2 w-2"
                           stroke="currentColor"
@@ -361,7 +368,7 @@ export default function Example() {
                             animate={{ y: 0, opacity: 1 }}
                             transition={{ duration: 0.1, delay: index * 0.1 }}
                           >
-                            <div className="block bg-[#111] hover:bg-[#222] transition-all duration-500">
+                            <div className="block bg-black hover:bg-[#111] transition-all duration-500">
                               <div className="flex items-center px-4 py-4 sm:px-6">
                                 <div className="flex min-w-0 flex-1 items-center">
                                   <div className="flex-shrink-0">
@@ -378,7 +385,7 @@ export default function Example() {
                                         {/* @ts-ignore */}
                                         {nft.altName}
                                       </p>
-                                      <p className="mt-2 flex items-center text-sm text-gray-500">
+                                      <p className="mt-2 flex items-center text-sm text-white">
                                         <WalletIcon
                                           className="mr-1.5 h-5 w-5 flex-shrink-0 text-gray-400"
                                           aria-hidden="true"
@@ -411,12 +418,22 @@ export default function Example() {
                                   </div>
                                 </div>
                                 <div className="flex space-x-2">
-                                  <button
+                                  {/* <button
                                     type="button"
                                     onClick={() => {
                                       setSelectedNFTCommends(nft);
                                     }}
                                     className="rounded-md bg-[#333] py-2.5 px-3.5 text-sm font-semibold text-white shadow-sm hover:bg-[#333]/80 transition-all duration-400"
+                                  >
+                                
+                                    {nft.commendCount} Reviews
+                                  </button> */}
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setSelectedNFTCommends(nft);
+                                    }}
+                                    className="rounded-md bg-transparent py-2.5 px-3.5 text-sm font-semibold text-[#777] shadow-sm ring-1 ring-inset ring-[#777] hover:ring-white hover:text-white transition-all duration-200"
                                   >
                                     {/* @ts-ignore */}
                                     {nft.commendCount} Reviews
@@ -426,7 +443,7 @@ export default function Example() {
                                     onClick={() => {
                                       setSelectedNFT(nft);
                                     }}
-                                    className="rounded-md bg-indigo-600 py-2.5 px-3.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                                    className="rounded-md bg-white py-2.5 px-3.5 text-sm font-semibold text-black shadow-sm hover:bg-black hover:text-white ring-1 ring-inset ring-[#555] hover:ring-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#333] transition-all duration-200"
                                   >
                                     Commend
                                   </button>
@@ -438,10 +455,11 @@ export default function Example() {
                                   >
                                     <Dialog
                                       as="div"
-                                      className="relative z-50 "
+                                      //   background blur
+                                      className="relative z-50"
                                       onClose={setSlideOverOpen}
                                     >
-                                      <div className="fixed inset-0" />
+                                      <div className="fixed inset-0 backdrop-blur-sm" />
 
                                       <div className="fixed inset-0 overflow-hidden">
                                         <div className="absolute inset-0 overflow-hidden">
@@ -458,17 +476,29 @@ export default function Example() {
                                               <Dialog.Panel className="pointer-events-auto w-screen max-w-md">
                                                 <div className="flex h-full flex-col divide-y divide-zinc-700 bg-black shadow-xl">
                                                   <div className="h-0 flex-1 overflow-y-auto">
-                                                    <div className="bg-indigo-700 py-6 px-4 sm:px-6">
+                                                    <div className="bg-[#111] py-6 px-4 sm:px-6">
                                                       <div className="flex items-center justify-between">
                                                         <Dialog.Title className="text-base font-semibold leading-6 text-white">
                                                           Give commend to{" "}
                                                           {/* @ts-ignore */}
-                                                          {nft.altName}
+                                                          {nft.seller.substring(
+                                                            0,
+                                                            6
+                                                          )}{" "}
+                                                          ...
+                                                          {/* @ts-ignore */}
+                                                          {nft.seller.substring(
+                                                            // @ts-ignore
+                                                            nft.seller.length -
+                                                              4,
+                                                            // @ts-ignore
+                                                            nft.seller.length
+                                                          )}
                                                         </Dialog.Title>
                                                         <div className="ml-3 flex h-7 items-center">
                                                           <button
                                                             type="button"
-                                                            className="rounded-md bg-indigo-700 text-indigo-200 hover:text-white focus:outline-none focus:ring-2 focus:ring-white"
+                                                            className="rounded-md bg-[#333] text-white hover:text-white/80 focus:outline-none focus:ring-2 focus:ring-white"
                                                             onClick={() =>
                                                               setSelectedNFT(
                                                                 null
@@ -486,7 +516,7 @@ export default function Example() {
                                                         </div>
                                                       </div>
                                                       <div className="mt-1">
-                                                        <p className="text-sm text-indigo-300">
+                                                        <p className="text-sm text-[#999]">
                                                           Get started by filling
                                                           in the information
                                                           below to give a
@@ -510,7 +540,7 @@ export default function Example() {
                                                                 rows={4}
                                                                 name="comment"
                                                                 id="comment"
-                                                                className="block w-full rounded-md text-white border-zinc-700 bg-black shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                                                className="block w-full rounded-md text-white border-zinc-700 bg-black shadow-sm focus:border-[#333] focus:ring-[#333] sm:text-sm"
                                                                 placeholder="This should be a description of how this person has helped you or your team."
                                                                 onChange={(
                                                                   event
@@ -528,15 +558,25 @@ export default function Example() {
                                                     </div>
                                                   </div>
                                                   <div className="flex flex-shrink-0 justify-end px-4 py-4">
-                                                    <button
-                                                      type="submit"
-                                                      className="ml-4 inline-flex justify-center rounded-md bg-indigo-600 py-2 px-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                                                      onClick={() =>
-                                                        handleGiveHeat(nft)
-                                                      }
-                                                    >
-                                                      Give Commend
-                                                    </button>
+                                                    {commendDescription ? (
+                                                      <button
+                                                        type="submit"
+                                                        className="ml-4 w-full inline-flex justify-center rounded-md bg-white py-2 px-3 text-sm font-semibold text-black shadow-sm hover:bg-white/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                                                        onClick={() =>
+                                                          handleGiveHeat(nft)
+                                                        }
+                                                      >
+                                                        Give Commend
+                                                      </button>
+                                                    ) : (
+                                                      <button
+                                                        type="submit"
+                                                        className="cursor-not-allowed ml-4 w-full inline-flex justify-center rounded-md bg-white py-2 px-3 text-sm font-semibold text-black shadow-sm hover:bg-white/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                                                        disabled
+                                                      >
+                                                        Write a commend first
+                                                      </button>
+                                                    )}
                                                   </div>
                                                 </div>
                                               </Dialog.Panel>
@@ -554,11 +594,11 @@ export default function Example() {
                                   >
                                     <Dialog
                                       as="div"
-                                      className="relative z-10"
+                                      className="relative z-10 border"
                                       //   @ts-ignore
                                       onClose={setSelectedNFTCommends}
                                     >
-                                      <div className="fixed inset-0" />
+                                      <div className="fixed inset-0 backdrop-blur-sm" />
 
                                       <div className="fixed inset-0 overflow-hidden">
                                         <div className="absolute inset-0 overflow-hidden">
@@ -572,7 +612,7 @@ export default function Example() {
                                               leaveFrom="translate-x-0"
                                               leaveTo="translate-x-full"
                                             >
-                                              <Dialog.Panel className="pointer-events-auto w-screen max-w-2xl">
+                                              <Dialog.Panel className="pointer-events-auto w-screen max-w-2xl border-l border-[#333]">
                                                 <div className="flex h-full flex-col overflow-y-scroll bg-black shadow-xl">
                                                   <div className="px-4 py-6 sm:px-6">
                                                     <div className="flex items-start justify-between">
@@ -603,11 +643,20 @@ export default function Example() {
                                                   {/* Main */}
                                                   <div className="divide-y divide-zinc-700">
                                                     <div className="pb-6 sticky top-0 bg-[#111]">
-                                                      <div className="h-24 bg-black sm:h-20 lg:h-28" />
+                                                      <div className="h-24 bg-black sm:h-20 lg:h-28">
+                                                        <img
+                                                          className="w-full h-full object-cover"
+                                                          src={
+                                                            //   @ts-ignore
+                                                            nft.coverImage
+                                                          }
+                                                          alt=""
+                                                        />
+                                                      </div>
                                                       <div className="lg:-mt-15 -mt-12  px-4 sm:-mt-8 sm:flex sm:items-end sm:px-6 ">
                                                         <div>
                                                           <div className="-m-1 flex">
-                                                            <div className="inline-flex overflow-hidden rounded-lg border-4 border-white">
+                                                            <div className="inline-flex overflow-hidden rounded-lg border-4 border-[#333]">
                                                               <img
                                                                 className="h-24 w-24 flex-shrink-0 sm:h-40 sm:w-40 lg:h-48 lg:w-48"
                                                                 src={
@@ -621,9 +670,19 @@ export default function Example() {
                                                         </div>
                                                         <div className="mt-6 sm:ml-6 sm:flex-1">
                                                           <div>
-                                                            <p className="text-lg text-[#999]">
+                                                            <p className="text-4xl text-white">
                                                               {/* @ts-ignore */}
-                                                              {nft.seller}
+                                                              {nft.seller.substring(
+                                                                0,
+                                                                5
+                                                              ) +
+                                                                "..." +
+                                                                // @ts-ignore
+                                                                nft.seller.substring(
+                                                                  38,
+                                                                  42
+                                                                )}
+                                                              &apos;s Commends
                                                             </p>
                                                           </div>
                                                         </div>
@@ -659,16 +718,17 @@ export default function Example() {
                                                     <div>
                                                       <ul
                                                         role="list"
-                                                        className="divide-y divide-[#111]"
+                                                        className="divide-y divide-[#111] p-4 space-y-4"
                                                       >
+                                                        {/* @ts-ignore */}
                                                         {nft.commendations.map(
                                                           (
-                                                            commendation,
-                                                            commendIndex
+                                                            commendation: any,
+                                                            commendIndex: any
                                                           ) => (
                                                             <li
                                                               key={commendIndex}
-                                                              className="py-4"
+                                                              className="p-4 border border-[#111] rounded-md"
                                                             >
                                                               <div className="flex space-x-3">
                                                                 <div className="flex-1 space-y-1">
@@ -712,10 +772,10 @@ export default function Example() {
                           <li className="py-4" key={index}>
                             <div className="flex items-center space-x-4">
                               <div className="flex-shrink-0">
-                                <div className="bg-[#333] w-8 h-8 animate-pulse rounded-full"></div>
+                                <div className="bg-[#333] w-10 h-10 animate-pulse rounded-md"></div>
                               </div>
                               <div className="min-w-0 flex-1">
-                                <div className="bg-[#333] w-full h-8 animate-pulse rounded-full"></div>
+                                <div className="bg-[#333] w-12 h-8 animate-pulse rounded-full"></div>
                                 {/* <p className="truncate text-sm text-gray-500">{'@' + person.handle}</p> */}
                               </div>
                               <div>

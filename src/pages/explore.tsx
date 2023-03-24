@@ -5,7 +5,7 @@ import NFT from "@/backend/build/contracts/NFT.json";
 import axios from "axios";
 import { motion } from "framer-motion";
 import { Dialog, Transition } from "@headlessui/react";
-import * as Toast from "@radix-ui/react-toast";
+import CommandPalette from "@/components/command-palette";
 
 import {
   Bars3BottomLeftIcon,
@@ -75,6 +75,7 @@ export default function Example() {
         // @ts-ignore
         document.getElementById("search").focus();
         event.preventDefault();
+        setOpen(true);
       }
     }
     document.addEventListener("keydown", handleKeyDown);
@@ -195,6 +196,7 @@ export default function Example() {
 
   return (
     <div className="bg-black h-screen">
+      <CommandPalette open={open} setOpen={setOpen} />
       <div>
         <Transition.Root show={sidebarOpen} as={Fragment}>
           <Dialog
@@ -299,19 +301,20 @@ export default function Example() {
               <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between mt-2 mb-2">
                   <div className="relative flex items-center">
-                    <input
-                      type="text"
+                    <button
                       name="search"
                       id="search"
-                      placeholder="Search for user"
-                      onChange={(e) => setQuery(e.target.value)}
-                      className="block bg-black w-full rounded-md border-0 py-1.5 pr-14 shadow-sm ring-1 ring-inset ring-zinc-700 text-white placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                    />
-                    <div className="absolute inset-y-0 -right-1 flex py-1.5 pr-1.5">
-                      <kbd className="inline-flex items-center rounded border border-zinc-700 px-1 font-sans text-xs text-[#777]">
-                        ⌘K
-                      </kbd>
-                    </div>
+                      //   onChange={(e) => setQuery(e.target.value)}
+                      onClick={() => setOpen(true)}
+                      className="block bg-black w-full rounded-md border-0 py-1.5 pr-14 shadow-sm ring-1 ring-inset ring-zinc-700 text-[#999] placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                    >
+                      &nbsp;&nbsp;&nbsp;search for user
+                      <div className="absolute inset-y-0 -right-1 flex py-1.5 pr-1.5">
+                        <kbd className="inline-flex items-center rounded border border-zinc-700 px-1 font-sans text-xs text-[#777]">
+                          ⌘K
+                        </kbd>
+                      </div>
+                    </button>
                   </div>
                   <div className="mb-1"></div>
                 </div>

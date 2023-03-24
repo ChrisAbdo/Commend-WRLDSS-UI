@@ -20,26 +20,26 @@ const cards = [
       "Commend is a community driven platform. I'm building building the platform with the community, for the community. If you have any ideas or suggestions, please let me know!",
   },
 ];
+const fadeIn = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { duration: 1.5 } },
+};
 
 export default function HeaderSection() {
-  const fadeIn = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { duration: 1.5 } },
-  };
-
   const [ref, inView] = useInView({
     triggerOnce: false,
     threshold: 0.1,
   });
 
   const { scrollY } = useSmoothScroll();
+
   return (
     <motion.div
       className="relative isolate overflow-hidden bg-white py-24 sm:py-32 z-40"
       style={{ y: scrollY }}
     >
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <div className="mx-auto mt-16 grid max-w-2xl grid-cols-1 gap-6 sm:mt-20 lg:mx-0 lg:max-w-none lg:grid-cols-3 lg:gap-8">
+        <div className="mx-auto grid max-w-2xl grid-cols-1 gap-6 lg:mx-0 lg:max-w-none lg:grid-cols-3 lg:gap-8">
           {cards.map((card, index) => (
             <div
               key={card.name}

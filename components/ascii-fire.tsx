@@ -1,5 +1,4 @@
 import React, { useEffect, useRef } from "react";
-import HeaderSection from "./header-section";
 
 const AsciiFireAnimation = () => {
   const preRef = useRef(null);
@@ -23,16 +22,17 @@ const AsciiFireAnimation = () => {
         a += char[b[i] > 7 ? 7 : b[i]];
         if (i % width > width - 2) a += "\r\n";
       }
-      //   @ts-ignore
-      preRef.current.firstChild.data = a;
+
+      if (preRef.current) {
+        // @ts-ignore
+        preRef.current.firstChild.data = a;
+      }
       setTimeout(f, 30);
     }
     f();
   }, []);
 
   return (
-    // centered
-
     <pre ref={preRef} className="font-bold text-white mx-auto">
       This animated fire in plain ASCII art needs JavaScript to run in your web
       browser.

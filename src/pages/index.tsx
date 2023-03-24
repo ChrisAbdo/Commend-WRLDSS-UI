@@ -2,10 +2,8 @@ import React from "react";
 
 import { motion } from "framer-motion";
 
-import Navbar from "@/components/navbar";
 import AsciiFireAnimation from "@/components/ascii-fire";
 import HeaderSection from "@/components/header-section";
-import ParallaxText from "@/components/scroll-velocity";
 import ParallaxTextSection from "@/components/parallax-text";
 import PreviewProject from "@/components/preview-project";
 
@@ -24,7 +22,7 @@ export default function LandingPage() {
           <div className="sticky z-20">
             <HeaderSection />
           </div>
-          <div className=" z-20 bg-black">
+          <div className="z-20 bg-black">
             <div className="flex flex-col items-center justify-center text-white">
               <ParallaxTextSection />
             </div>

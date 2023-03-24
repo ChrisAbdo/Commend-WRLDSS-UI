@@ -10,6 +10,8 @@ import { motion, AnimatePresence } from "framer-motion";
 
 import { useEffect, useState, Fragment } from "react";
 
+declare var window: any;
+
 const products = [
   {
     id: 1,
@@ -68,33 +70,16 @@ const TextAnimation = ({ address = "" }) => {
 
   return <>{renderLetters()}</>;
 };
+
 const animationVariants = {
   hidden: { opacity: 0, y: -50 },
   visible: (i: any) => ({ opacity: 1, y: 0, transition: { delay: i * 0.1 } }),
 };
 
-const people = [
-  { id: 1, name: "Wade Cooper" },
-  { id: 2, name: "Arlene Mccoy" },
-  { id: 3, name: "Devon Webb" },
-  { id: 4, name: "Tom Cook" },
-  { id: 5, name: "Tanya Fox" },
-  { id: 6, name: "Hellen Schmidt" },
-  { id: 7, name: "Caroline Schultz" },
-  { id: 8, name: "Mason Heaney" },
-  { id: 9, name: "Claudie Smitham" },
-  { id: 10, name: "Emil Schaefer" },
-];
-
-function classNames(...classes: any[]) {
-  return classes.filter(Boolean).join(" ");
-}
-
 export default function CreateProfile() {
   //   const { toast } = useToast();
 
   const [formInput, updateFormInput] = useState({
-    title: "",
     coverImage: "",
     role: "",
   });
@@ -111,7 +96,46 @@ export default function CreateProfile() {
   const [loading, setLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
 
-  const [selected, setSelected] = useState(people[3]);
+  const web3 = new Web3(Web3.givenProvider);
+
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [connectedAccount, setConnectedAccount] = useState("");
+
+  useEffect(() => {
+    const loadConnectedAccount = async () => {
+      const accounts = await web3.eth.getAccounts();
+      if (accounts.length > 0) {
+        setConnectedAccount(accounts[0]);
+      }
+    };
+
+    // event listener for MetaMask account change
+
+    window.ethereum.on("accountsChanged", function (accounts: string[]) {
+      setConnectedAccount(accounts[0]);
+    });
+
+    // event listener for MetaMask disconnect
+    window.ethereum.on(
+      "disconnect",
+      function (error: { code: number; message: string }) {
+        // @ts-ignore
+        setConnectedAccount(null);
+      }
+    );
+
+    loadConnectedAccount();
+  }, []);
+
+  const connectWallet = async () => {
+    try {
+      const accounts = await web3.eth.requestAccounts();
+      setConnectedAccount(accounts[0]);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -124,14 +148,6 @@ export default function CreateProfile() {
   }
 
   function handleDragOver(e: any) {
-    e.preventDefault();
-  }
-
-  function handleDrop2(e: any) {
-    e.preventDefault();
-  }
-
-  function handleDragOver2(e: any) {
     e.preventDefault();
   }
 
@@ -179,13 +195,12 @@ export default function CreateProfile() {
   }
 
   async function uploadToIPFS() {
-    const { title, coverImage, role } = formInput;
-    if (!title || !coverImage || !role || !fileUrl) {
+    const { coverImage, role } = formInput;
+    if (!coverImage || !role || !fileUrl) {
       return;
     } else {
       // first, upload metadata to IPFS
       const data = JSON.stringify({
-        title,
         coverImage,
         image: fileUrl,
         role,
@@ -222,11 +237,11 @@ export default function CreateProfile() {
       const NFTContract = new web3.eth.Contract(NFT.abi, NFTContractAddress);
       const accounts = await web3.eth.getAccounts();
 
-      const radioContract = new web3.eth.Contract(
+      const commendContract = new web3.eth.Contract(
         // @ts-ignore
-        Radio.abi,
+        Commend.abi,
         // @ts-ignore
-        Radio.networks[networkId].address
+        Commend.networks[networkId].address
       );
 
       NFTContract.methods
@@ -236,7 +251,7 @@ export default function CreateProfile() {
           console.log("minted");
           // List the NFT
           const tokenId = receipt.events.NFTMinted.returnValues[0];
-          radioContract.methods
+          commendContract.methods
             .listNft(NFTContractAddress, tokenId)
             .send({ from: accounts[0] })
             .on("receipt", function () {
@@ -295,6 +310,7 @@ export default function CreateProfile() {
                             onChange={(e) => {
                               createCoverImage(e);
                               handleFileInputChange(e);
+                              onChange(e);
                             }}
                             className="appearance-none border border-[#333] rounded w-full py-2 px-3 text-white leading-tight focus:outline-none focus:shadow-outline"
                           />
@@ -322,16 +338,15 @@ export default function CreateProfile() {
                     <label htmlFor="email">Title</label>
                     <div>
                       <label
-                        htmlFor="location"
+                        htmlFor="role"
                         className="block text-sm font-medium leading-6 text-white"
                       >
-                        Location
+                        Role
                       </label>
                       <select
-                        id="location"
-                        name="location"
+                        id="role"
+                        name="role"
                         className="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-white bg-black ring-1 ring-inset ring-[#111] focus:ring-2 focus:ring-[#333] sm:text-sm sm:leading-6"
-                        defaultValue="Canada"
                         onChange={(e) => {
                           updateFormInput({
                             ...formInput,
@@ -347,10 +362,62 @@ export default function CreateProfile() {
                           });
                         }}
                       >
-                        <option value="US">United States</option>
-                        <option>Canada</option>
-                        <option>Mexico</option>
+                        <option value="" hidden disabled selected>
+                          Select a role
+                        </option>
+                        <option>Software Engineer</option>
+                        <option>Product Manager</option>
+                        <option>Designer</option>
+                        <option>Marketing</option>
+                        <option>Sales</option>
+                        <option>Community Manager</option>
+                        <option>Other</option>
                       </select>
+                    </div>
+                  </motion.div>
+
+                  <motion.div
+                    className="mt-4"
+                    custom={4}
+                    initial="hidden"
+                    animate="visible"
+                    variants={animationVariants}
+                  >
+                    <div>
+                      <label
+                        htmlFor="email"
+                        className="block text-sm font-medium leading-6 text-white"
+                      >
+                        Confirm wallet address
+                      </label>
+                      <div className="mt-2">
+                        {connectedAccount ? (
+                          <input
+                            type="email"
+                            name="email"
+                            id="email"
+                            className="cursor-not-allowed block w-full rounded-md border-0 py-1.5 bg-black text-white shadow-sm ring-1 ring-inset ring-[#111] placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                            placeholder={connectedAccount}
+                            disabled
+                            aria-describedby="email-description"
+                          />
+                        ) : (
+                          <button
+                            className="bg-[#333] text-white rounded-md px-4 py-2 w-full"
+                            onClick={connectWallet}
+                          >
+                            Connect Wallet to Continue
+                          </button>
+                        )}
+                      </div>
+                      <p
+                        className="mt-2 text-sm text-white font-bold"
+                        id="email-description"
+                      >
+                        Commend does not ask you to sign anything. You should
+                        only connect an account to Polygon Mainnet and make
+                        simple contract interactions.
+                      </p>
                     </div>
                   </motion.div>
                 </div>
@@ -389,17 +456,23 @@ export default function CreateProfile() {
                       <div className="ml-6 flex flex-1 flex-col">
                         <div className="flex">
                           <div className="min-w-0 flex-1">
-                            <AnimatePresence>
-                              <div className="mt-1 bg-[#333] w-3/3 h-6 animate-pulse rounded-md" />
-                            </AnimatePresence>
-                            {/* <p className="mt-1 text-sm text-gray-500">GENRE</p> */}
+                            <h4>
+                              {connectedAccount ? (
+                                <span className="text-lg text-white">
+                                  {connectedAccount}
+                                </span>
+                              ) : (
+                                <div className="bg-[#333] w-full h-9 animate-pulse rounded-md" />
+                              )}
+                            </h4>
+
                             <h4>
                               {role ? (
                                 <span className="text-lg text-white">
                                   {role}
                                 </span>
                               ) : (
-                                <div className="mt-1 bg-[#333] w-1/3 h-6 animate-pulse rounded-md" />
+                                <div className="mt-1 bg-[#333] w-1/3 h-9 animate-pulse rounded-md" />
                               )}
                             </h4>
                           </div>
@@ -410,9 +483,14 @@ export default function CreateProfile() {
                 </ul>
 
                 <div className="border-t border-[#333] py-6 px-4 sm:px-6">
-                  <button className="w-full  justify-center bg-indigo-500 border border-transparent rounded-md shadow-sm py-2 px-4 inline-flex items-center text-base font-medium text-white hover:bg-[#ff4d4d] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#ff4d4d]">
-                    Create Profile
-                  </button>
+                  {connectedAccount && (
+                    <button
+                      onClick={listNFTForSale}
+                      className="w-full  justify-center bg-white border border-transparent rounded-md shadow-sm py-2 px-4 inline-flex items-center text-base font-medium text-black hover:bg-white/80 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#ff4d4d]"
+                    >
+                      Create Profile
+                    </button>
+                  )}
                 </div>
               </motion.div>
             </div>
